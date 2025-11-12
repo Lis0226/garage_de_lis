@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Tienda de vehículos El Garage de Lis - Compra y venta de autos nuevos y usados">
+    <title>El Garage de Lis</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- jsPDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="bg-dark text-white p-4" style="background-image: url('https://t4.ftcdn.net/jpg/02/82/00/75/360_F_282007508_wdCUP7hUMNK1Cuzj7XmOcFmzyzJ0Nnp9.jpg'); background-size: cover; background-position: center; height: 50vh;">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="display-4 fw-bold"><i class="fas fa-car me-2"></i>GarageDeLis</h1>
+                <nav class="navbar navbar-expand-lg navbar-dark">
+                    <div class="container-fluid">
+                        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                            <span class="navbar-toggler-icon"></span>
+                        </button>
+                        <div class="collapse navbar-collapse" id="navbarNav">
+                            <ul class="navbar-nav">
+                                <li class="nav-item">
+                                    <a class="nav-link" href="#inicio">Inicio</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="#vehiculos">Vehículos</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </nav>
+                <div class="d-flex align-items-center">
+                    <input type="text" id="searchInput" class="form-control me-2" placeholder="Buscar vehículo..." aria-label="Buscar vehículo">
+                    <button class="btn btn-outline-light" id="cartButton">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span class="badge bg-danger" id="cartCount">0</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container my-5">
+        <section id="inicio" class="mb-5">
+            <h2 class="text-center mb-4">Bienvenido a El Garage de Lis</h2>
+            <p class="lead text-center">Encuentra el vehículo de tus sueños al mejor precio. Contamos con una amplia variedad de autos nuevos y usados.</p>
+        </section>
+
+        <section id="vehiculos">
+            <h2 class="text-center mb-4">Nuestros Vehículos</h2>
+            <div class="text-center mb-4">
+                <div class="spinner-border text-primary" role="status" id="loadingSpinner">
+                    <span class="visually-hidden">Cargando...</span>
+                </div>
+            </div>
+            <div class="row" id="productsContainer"></div>
+        </section>
+    </main>
+
+    <!-- Modal Cantidad -->
+    <div class="modal fade" id="quantityModal" tabindex="-1" aria-labelledby="quantityModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="quantityModalLabel">Seleccionar Cantidad</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="quantityInput" class="form-label">Cantidad:</label>
+                        <input type="number" class="form-control" id="quantityInput" min="1" value="1">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="addToCartBtn">Añadir al Carrito</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Carrito -->
+    <div class="modal fade" id="cartModal" tabindex="-1" aria-labelledby="cartModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="cartModalLabel">Tu Carrito</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="cartItems"></div>
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <h5>Total:</h5>
+                        <span id="cartTotal" class="fw-bold">$0</span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Seguir viendo vehículos</button>
+                    <button type="button" class="btn btn-primary" id="checkoutBtn">Pagar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Pago -->
+    <div class="modal fade" id="paymentModal" tabindex="-1" aria-labelledby="paymentModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="paymentModalLabel">Procesar Pago</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="mb-3">
+                            <label for="nameInput" class="form-label">Nombre:</label>
+                            <input type="text" class="form-control" id="nameInput" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="cardInput" class="form-label">Número de Tarjeta:</label>
+                            <input type="text" class="form-control" id="cardInput" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="processPaymentBtn">Procesar Pago</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Detalle -->
+    <div class="modal fade" id="detailModal" tabindex="-1" aria-labelledby="detailModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="detailModalLabel">Detalle del Vehículo</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <img id="detailImage" src="" class="img-fluid rounded" alt="Imagen del vehículo">
+                        </div>
+                        <div class="col-md-6">
+                            <h3 id="detailTitle"></h3>
+                            <ul class="list-group list-group-flush mt-3">
+                                <li class="list-group-item"><strong>Marca:</strong> <span id="detailMarca"></span></li>
+                                <li class="list-group-item"><strong>Modelo:</strong> <span id="detailModelo"></span></li>
+                                <li class="list-group-item"><strong>Categoría:</strong> <span id="detailCategoria"></span></li>
+                                <li class="list-group-item"><strong>Tipo:</strong> <span id="detailTipo"></span></li>
+                                <li class="list-group-item"><strong>Precio:</strong> <span id="detailPrecio"></span></li>
+                            </ul>
+                            <button class="btn btn-primary mt-3" id="addToCartFromDetail">Añadir al Carrito</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-dark text-white text-center p-3">
+        <p class="mb-0">&copy; 2025 El Garage de Lis. Todos los derechos reservados.</p>
+    </footer>
+
+    <!-- Bootstrap 5 JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script src="script.js"></script>
+</body>
+</html>
